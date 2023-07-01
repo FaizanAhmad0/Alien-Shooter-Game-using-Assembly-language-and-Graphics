@@ -1,0 +1,1150 @@
+display_start1 MACRO
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;MAKING GRID;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+position_cursor 0,0,0 ;PG_NUM,colnum,rows
+change_background 0,56,56,0,0,00000111b ;clear_screen,upper_row_num,left_column_num,lower_row_num,right_column_num,color               
+PRINT_PIXEL 0fh,0,60 ;color,col,row
+;print_grid ;7 by 7 black
+;change_background 0,0,0,29,55,00000110b
+
+change_background 0,0,0,28,57,00000100b;clear_screen,upper_row_num,left_column_num,lower_row_num,right_column_num,color
+change_background 0,0,57,28,79,00000100b;clear_screen,upper_row_num,left_column_num,lower_row_num,right_column_num,color
+
+change_background 0,0,0,2,79,00000011b;clear_screen,upper_row_num,left_column_num,lower_row_num,right_column_num,color
+change_background 0,26,0,29,79,00000011b					;clear_screen,upper_row_num,left_column_num,lower_row_num,right_column_num,color
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+;******************** WELCOME PAGE **************************;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	position_cursor 0,30,3 ;PG_NUM,colnum,rows
+	string_print tit
+	position_cursor 0,38,4 ;PG_NUM,colnum,rows
+	string_print tit0
+	position_cursor 0,25,5 ;PG_NUM,colnum,rows
+	string_print tit2
+	position_cursor 0,32,6 ;PG_NUM,colnum,rows
+	string_print tit3
+	
+	
+	position_cursor 0,31,8;PG_NUM,colnum,rows
+	string_print dev1
+	position_cursor 0,31,9;PG_NUM,colnum,rows
+	string_print dev2
+	position_cursor 0,31,10;PG_NUM,colnum,rows
+	string_print dev3
+	
+		;;;;;;;;;;;;;;;;change_background 0,12,62,14,73,00001101b;clear_screen,upper_row_num,left_column_num,lower_row_num,right_column_num,color
+
+	change_background 0,12,33,14,46,00001010b;clear_screen,upper_row_num,left_column_num,lower_row_num,right_column_num,color
+	position_cursor 0,34,13;PG_NUM,colnum,rows
+	string_print rules
+	
+	
+	position_cursor 0,8,28 ;PG_NUM,colnum,rows
+	string_print level1
+	
+	position_cursor 0,36,28 ;PG_NUM,colnum,rows
+	string_print level2
+	
+	position_cursor 0,66,28 ;PG_NUM,colnum,rows
+	string_print level3
+	
+;;;;;;;;;;;;;;;;;;START BUTTON;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	change_background 0,23,35,25,42,11111110b ;clear_screen,upper_row_num,left_column_num,lower_row_num,right_column_num,color
+	position_cursor 0,36,23 ;PG_NUM,colnum,rows
+	print_single_num 25
+	print_single_num 25
+	print_single_num 25
+	print_single_num 25
+	print_single_num 25
+	print_single_num 25
+	position_cursor 0,35,24 ;PG_NUM,colnum,rows
+	string_print start_button
+	position_cursor 0,36,25 ;PG_NUM,colnum,rows
+	print_single_num 24
+	print_single_num 24
+	print_single_num 24
+	print_single_num 24
+	print_single_num 24
+	print_single_num 24
+	
+	
+;;;;;;;;;;;;;;;;;Click anywhere in the screen;;;;;;;;;;;;;;;;;;;;;
+;position_cursor 0,10,15 ;PG_NUM,colnum,rows
+;string_print clickonthescreen
+;make_button 0,200,400,200,300;bx(button pressed),cx(x-coordinate)_start,cx(x-coordinate)_end, dx(y-co-ordinate)_start,dx(y-co-ordinate)_end
+
+ENDM
+
+
+change_background MACRO clear_screen,upper_row_num,left_column_num,lower_row_num,right_column_num,color
+
+	MOV AH, 06h	;
+	MOV AL, clear_screen
+	MOV ch, upper_row_num
+	MOV CL, left_column_num
+	MOV DH, lower_row_num
+	MOV DL, right_column_num
+	MOV BH, color
+	INT 10h
+
+ENDM
+
+
+STRING_PRINT MACRO str1
+
+	mov dx,offset str1
+	mov ah,09
+	int 21h
+endm
+
+print_single_num MACRO num
+
+	mov dl,num
+	mov ah,02
+	int 21h
+
+endm
+
+PRINT_PIXEL MACRO color,col,row
+
+mov ah,0ch
+mov al,color
+mov bh,0	
+mov cx,col	;# (X Position)
+mov dx,row  ; # (Y Position)
+int 10h
+
+endm
+
+NEXTLINE MACRO
+	mov dl,10
+	mov ah,02
+	int 21h
+	mov dl,13
+	mov ah,02
+	int 21h
+endm
+
+
+EnterUserName MACRO str1,str2,username_count
+	
+	mov dx,offset str1
+	mov ah,9
+	int 21h
+	mov si,offset str2
+	l1:
+	mov ah,1
+	int 21h
+	cmp al,13
+	JE exit
+	mov [si],al
+	inc si
+	inc cx
+	inc username_count
+	jmp l1
+
+exit:	
+endm
+
+
+write_name_in_file MACRO
+
+	;***************CREATING A FILE***************;
+
+	mov ah,3ch
+	mov dx,offset FNAME
+	mov cl,0
+	int 21h
+	mov dx,0
+
+	mov HANDLE,ax
+
+	
+	MOV AH,3DH; For opening an existing file of name fname
+	MOV DX,OFFSET FNAME
+	MOV AL,2  ; 0 for Reading Mode, 1 MEAN FOR WRITING PURPOSE 
+	; 2 means for both reading and writing mode
+	INT 21H
+	
+	MOV HANDLE,AX
+	;    File Pointers
+	MOV AH,42H; move file pointer function
+	MOV BX,HANDLE; Bx holds the handle which tells in which file we have to write
+	XOR CX,CX; Movig 0 bytes to CX
+	XOR DX,DX; Movig 0 bytes to DX
+	MOV AL, 2; Movement Code: 0 means move relative to beginning of file
+	; 1 means move relative to the current Pointer location
+	;2 means move relative to the end of file; 
+	INT 21H; move pointer to the end
+	; DX:AX = file size
+
+	; For Writing PURPOSE in the existing file, we use 40H
+	MOV AH,40H
+	MOV BX,HANDLE; Bx holds the handle which tells in which file we have to write
+	MOV CX,Len_MSG; How many bytes we have to write
+	MOV DX, OFFSET MSG_name
+	INT 21H
+
+
+	; For Writing PURPOSE in the existing file, we use 40H
+	MOV AH,40H
+	MOV BX,HANDLE; Bx holds the handle which tells in which file we have to write
+	MOV CX,username_count; How many bytes we have to write
+	MOV DX, OFFSET username1
+	INT 21H
+
+	; Closing the File
+
+	MOV AH,3EH
+	MOV BX,HANDLE
+	INT 21H
+
+endm
+
+PRINT_GRID MACRO rows,cols
+			
+;horizontal line
+	outerloop1:
+		innerloop1:
+			int 10h
+			inc cx
+			cmp cx,420
+		jle innerloop1
+		
+		mov cx,0
+		mov al,03h	;for color
+		add dx,60
+		cmp dx,420
+	jle outerloop1
+	
+	
+;vertical lines
+	mov cx,0	
+	mov dx,60
+	
+	outerloop2:
+		innerloop2:
+			int 10h
+			inc dx
+			cmp dx,480
+			jle innerloop2
+		mov dx,60
+		mov al,03h
+		add cx,60
+		cmp cx,460
+	jle outerloop2
+
+endm
+
+
+
+
+position_cursor MACRO Page_Number, columns,Rows
+;;;;;;POSITION THE CURSOR IN THE CENTER;;;;;;
+  mov ah,2; Settings for Cursor POSITION
+  mov bh,Page_Number; Contains Page Number which is 0 here
+  mov dl,columns; mid-point of columns (Total Cols = 80)
+  mov dh,Rows ; mid-point of Rows (Total Rows = 25)
+  int 10h 
+
+endm
+
+
+print_ship MACRO start_x,start_y, Dim_x,Dim_y,array
+mov dx,start_y	;start-y
+
+
+mov si,0
+
+mov counter1,0
+mov counter2,0
+mov si,offset array
+
+drawOuter:
+
+	drawinner:
+	
+	mov ah,0ch
+	mov al,[si]
+	int 10h
+	inc cx
+	inc counter2
+	inc si
+	cmp counter2,Dim_x
+	jl drawinner
+	
+mov counter2,0
+mov cx, start_x	;start-x
+inc dx
+inc counter1
+cmp counter1,Dim_y
+jl drawOuter
+endm
+
+
+
+PRINT_MUSHROOM MACRO r, c ; row and col
+	mov ah,0ch ; Config to write Pixel on screen
+	mov al,0Fh ; AL contains color and F = White Color
+	mov bh,0; BH contains page number
+	;mov al,04h ; Changing the color of the Candy: blue here
+	;choosing position for placing Candy:
+	mov cx,c
+	add cx,15
+	mov dx,r
+	add dx,15
+	; DX contains Y-axis position ROW # 
+	; Drawig Candy in the area of Grid
+	.Repeat
+		.Repeat
+			int 10h
+			inc cx
+		.until (cx==c+37)
+		inc dx
+		mov cx,c
+		add cx,23
+	.until (dx==r + 49)
+	mov ah,0ch ; Config to write Pixel on screen
+	mov al,0Fh ; AL contains color and F = White Color
+	mov bh,0; BH contains page number
+	mov al,04h ; Changing the color of the Candy: blue here
+	;choosing position for placing Candy:
+	mov cx,c
+	add cx,15
+	mov dx,r
+	add dx,15
+	; DX contains Y-axis position ROW # 
+	; Drawig Candy in the area of Grid
+	.Repeat
+		.Repeat
+			int 10h
+			inc cx
+		.until (cx==c+ 45)
+		inc dx
+		mov cx,c
+		add cx,15
+	.until (dx==r+ 37)
+ENDM
+
+
+
+
+
+
+other MACRO
+
+mov dx,var4 ;start-y
+mov si,0
+
+mov counter1,0
+mov counter2,0
+
+drawOuterenemy:
+
+    drawinnerenemy:
+    
+    mov ah,0ch
+    mov al,enemy1[si]
+    int 10h
+    inc cx
+    inc counter2
+    inc si
+    cmp counter2,27
+    jl drawinnerenemy
+    
+mov counter2,0
+mov cx, var3    ;start-x
+inc dx
+inc counter1
+cmp counter1,32
+jl drawOuterenemy
+ENDM
+
+
+
+
+
+fire MACRO
+
+mov ax,0
+mov ax,var1
+sub ax,15
+mov var1fire,ax
+mov ax,0
+mov ax,var2
+add ax,16
+mov var2fire,ax
+mov di,0
+fireloop:
+cmp di,4
+jge exitfire
+
+mov dx,var1fire    ;start-y
+mov si,0
+
+mov counter1fire,0
+mov counter2fire,0
+
+drawOuterfire:
+
+    drawinnerfire:
+    
+    mov ah,0ch
+    mov al,fire1[si]
+    int 10h
+    inc cx
+    inc counter2fire
+    inc si
+    cmp counter2fire,9
+    jl drawinnerfire
+    
+mov counter2fire,0
+mov cx, var2fire  ;start-x
+inc dx
+inc counter1fire
+cmp counter1fire,12
+jl drawOuterfire
+add di,1
+MOV     CX, 0H
+MOV     DX, 4240H
+MOV     AH, 86H
+INT     15H
+firec
+
+cmp var1fire,147
+jle check21same
+jg exitfrom
+check21same:
+cmp var2fire,150
+jl exitcheck21
+cmp var2fire,177
+jle black21
+exitcheck21:
+cmp var2fire,200
+jl exitcheck22
+cmp var2fire,227
+jle black22
+exitcheck22:
+cmp var2fire,250
+jl exitcheck23
+cmp var2fire,277
+jle black23
+exitcheck23:
+cmp var2fire,300
+jl exitcheck24
+cmp var2fire,327
+jle black24
+exitcheck24:
+cmp var2fire,350
+jl exitcheck25
+cmp var2fire,377
+jle black25
+exitcheck25:
+cmp var2fire,400
+jl exitcheck26
+cmp var2fire,427
+jle black26
+exitcheck26:
+cmp var2fire,450
+jl exitcheck27
+cmp var2fire,477
+jle black27
+exitcheck27:
+jmp exitfrom
+black21:
+inc Score2
+inc s2
+cmp s2,9
+jg score21
+jle sdisp21
+score21:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp21:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,125
+mov var3black,150
+call otherblack
+jmp exitfrom
+black22:
+inc Score2
+inc s2
+cmp s2,9
+jg score22
+jle sdisp22
+score22:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp22:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,125
+mov var3black,200
+call otherblack
+jmp exitfrom
+black23:
+inc Score2
+inc s2
+cmp s2,9
+jg score23
+jle sdisp23
+score23:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp23:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,125
+mov var3black,250
+call otherblack
+jmp exitfrom
+black24:
+inc Score2
+inc s2
+cmp s2,9
+jg score24
+jle sdisp24
+score24:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp24:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,125
+mov var3black,300
+call otherblack
+jmp exitfrom
+black25:
+inc Score2
+inc s2
+cmp s2,9
+jg score25
+jle sdisp25
+score25:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp25:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,125
+mov var3black,350
+call otherblack
+jmp exitfrom
+black26:
+inc Score2
+inc s2
+cmp s2,9
+jg score26
+jle sdisp26
+score26:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp26:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,125
+mov var3black,400
+call otherblack
+jmp exitfrom
+black27:
+inc Score2
+inc s2
+cmp s2,9
+jg score27
+jle sdisp27
+score27:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp27:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+
+mov var4black,125
+mov var3black,450
+call otherblack
+jmp exitfrom
+black28:
+inc Score2
+inc s2
+cmp s2,9
+jg score28
+jle sdisp28
+score28:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp28:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,125
+mov var3black,500
+call otherblack
+
+exitfrom::
+cmp var1fire,32
+jle check1same
+jg exutth
+check1same:
+cmp var2fire,0
+jl exitcheck1
+cmp var2fire,27
+jle black1
+exitcheck1:
+cmp var2fire,50
+jl exitcheck2
+cmp var2fire,77
+jle black2
+exitcheck2:
+cmp var2fire,100
+jl exitcheck3
+cmp var2fire,127
+jle black3
+exitcheck3:
+cmp var2fire,150
+jl exitcheck4
+cmp var2fire,177
+jle black4
+exitcheck4:
+cmp var2fire,200
+jl exitcheck5
+cmp var2fire,227
+jle black5
+exitcheck5:
+cmp var2fire,250
+jl exitcheck6
+cmp var2fire,277
+jle black6
+exitcheck6:
+cmp var2fire,300
+jl exitcheck7
+cmp var2fire,327
+jle black7
+exitcheck7:
+cmp var2fire,350
+jl exitcheck8
+cmp var2fire,377
+jle black8
+exitcheck8:
+cmp var2fire,400
+jl exitcheck9
+cmp var2fire,427
+jle black9
+exitcheck9:
+cmp var2fire,450
+jl exitcheck10
+cmp var2fire,477
+jle black10
+exitcheck10:
+cmp var2fire,500
+jl exitcheck11
+cmp var2fire,527
+jle black11
+exitcheck11:
+cmp var2fire,550
+jl exitcheck12
+cmp var2fire,577
+jle black12
+exitcheck12:
+cmp var2fire,600
+jl exitcheck13
+cmp var2fire,627
+jle black13
+exitcheck13:
+black1:
+inc Score2
+inc s2
+cmp s2,9
+jg sc1
+jle sdisp1
+sc1:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp1:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,0
+call otherblack
+jmp exutth
+black2:
+inc Score2
+inc s2
+cmp s2,9
+jg sc2
+jle sdisp2
+sc2:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp2:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,50
+call otherblack
+jmp exutth
+black3:
+inc Score2
+inc s2
+cmp s2,9
+jg score3
+jle sdisp3
+score3:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp3:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,100
+call otherblack
+jmp exutth
+black4:
+inc Score2
+inc s2
+cmp s2,9
+jg score4
+jle sdisp4
+score4:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp4:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,150
+call otherblack
+jmp exutth
+black5:
+inc Score2
+inc s2
+cmp s2,9
+jg score5
+jle sdisp5
+score5:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp5:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,200
+call otherblack
+jmp exutth
+black6:
+inc Score2
+inc s2
+cmp s2,9
+jg score6
+jle sdisp6
+score6:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp6:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,250
+call otherblack
+jmp exutth
+black7:
+inc Score2
+inc s2
+cmp s2,9
+jg score7
+jle sdisp7
+score7:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp7:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,300
+call otherblack
+jmp exutth
+black8:
+inc Score2
+inc s2
+cmp s2,9
+jg score8
+jle sdisp8
+score8:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp8:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,350
+call otherblack
+jmp exutth
+black9:
+inc Score2
+inc s2
+cmp s2,9
+jg score9
+jle sdisp9
+score9:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp9:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,400
+call otherblack
+jmp exutth
+black10:
+inc Score2
+inc s2
+cmp s2,9
+jg score10
+jle sdisp10
+score10:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp10:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,450
+call otherblack
+jmp exutth
+black11:
+inc Score2
+inc s2
+cmp s2,9
+jg score11
+jle sdisp11
+score11:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp11:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,500
+call otherblack
+jmp exutth
+black12:
+inc Score2
+inc s2
+cmp s2,9
+jg score12
+jle sdisp12
+score12:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp12:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,550
+call otherblack
+jmp exutth
+black13:
+inc Score2
+inc s2
+cmp s2,9
+jg score13
+jle sdisp13
+score13:
+mov Score2,'0'
+mov Score1,'1'
+inc Score2
+sdisp13:
+LEA DX,s1
+mov ah, 09h
+int 21h
+LEA DX,Score1
+mov ah, 09h
+int 21h
+LEA DX,Score2
+mov ah, 09h
+int 21h
+
+mov var4black,5
+mov var3black,600
+call otherblack
+
+jmp exutth
+
+exutth::
+
+
+;;;;;;;;;;;;;;;;;;
+;;File Handling ;;
+;;;;;;;;;;;;;;;;;;
+
+mov si,0
+mov ah,0
+mov al ,Score1
+mov [buffer+si],ax
+inc si
+mov al ,Score2
+mov [buffer+si],ax
+inc si
+start:
+mov [buffer+si],"$"
+mov ah,3ch
+mov dx,offset filename
+mov cl,0
+int 21h
+mov dx,0
+mov fhandle,ax
+
+jmp open
+
+open:
+mov ah,3dh
+mov al,02
+mov dx,offset filename
+int 21h
+mov fhandle,ax
+jmp write
+
+write:
+mov ah,40h
+mov bx,fhandle
+mov dx,offset buffer
+mov cx,lengthof buffer
+int 21h
+
+jmp close
+
+close:
+mov ah,3eh
+mov bx,fhandle
+int 21h
+
+
+sub var1fire,135
+jmp fireloop
+exitfire:
+
+endm
+
+
+
+
+
+
+
+firec MACRO
+
+mov dx,var1fire    ;start-y
+mov si,0
+
+mov counter1fire,0
+mov counter2fire,0
+
+drawcOuterfire:
+
+    drawcinnerfire:
+    
+    mov ah,0ch
+    mov al,firecover[si]
+    int 10h
+    inc cx
+    inc counter2fire
+    inc si
+    cmp counter2fire,9
+    jl drawcinnerfire
+    
+mov counter2fire,0
+mov cx, var2fire  ;start-x
+inc dx
+inc counter1fire
+cmp counter1fire,12
+jl drawcOuterfire
+exitfire1:
+endm
+
+
+;/////////////////////////////////////L3
+
+
